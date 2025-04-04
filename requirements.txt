@@ -2,5 +2,6 @@ streamlit
 openai==1.70.0
 PyMuPDF
 langchain
-faiss-cpu
+chromadb
 tiktoken
+
