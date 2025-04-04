@@ -4,27 +4,23 @@ import time
 import tempfile
 import mimetypes
 
-# Load OpenAI API key from Streamlit secrets
+# Load API key
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.title("Engineering PDF Assistant")
 st.caption("Ask a question about your uploaded engineering PDF document.")
-
-# Debug: show SDK version
 st.write("OpenAI SDK version:", openai.__version__)
 
-# Upload file and question input
+# Upload and question input
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
 user_question = st.text_input("Ask a question about the PDF")
 
 if uploaded_file and user_question:
     with st.spinner("Saving and uploading file to OpenAI..."):
-        # Save file temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
             tmp_path = tmp_file.name
 
-        # Upload file to OpenAI
         try:
             content_type = mimetypes.guess_type(uploaded_file.name)[0] or "application/pdf"
             with open(tmp_path, "rb") as f:
@@ -47,8 +43,13 @@ if uploaded_file and user_question:
                     "Provide clear answers and cite sections where applicable."
                 ),
                 model="gpt-4-turbo",
-                tools=[{"type": "retrieval"}],
-                file_ids=[file_id]
+                tools=[{"type": "retrieval"}]
+            )
+
+            # ✅ Attach file to assistant separately
+            openai.beta.assistants.files.create(
+                assistant_id=assistant.id,
+                file_id=file_id
             )
         except Exception as e:
             st.error(f"Assistant creation failed: {e}")
@@ -103,3 +104,4 @@ if uploaded_file and user_question:
                     st.markdown(msg.content[0].text.value)
         except Exception as e:
             st.error(f"Failed to retrieve messages: {e}")
+
