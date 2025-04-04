@@ -3,6 +3,8 @@ import openai
 import time
 import tempfile
 
+st.write("OpenAI package version:", openai.__version__)
+
 # Set your API key from secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
