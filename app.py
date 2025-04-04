@@ -54,6 +54,13 @@ if uploaded_file and user_question:
     with st.spinner("Creating conversation thread..."):
         try:
             thread = openai.beta.threads.create()
+
+            # ✅ NEW: Attach file to thread here!
+            openai.beta.threads.files.create(
+                thread_id=thread.id,
+                file_id=file_id
+            )
+
         except Exception as e:
             st.error(f"Thread creation failed: {e}")
             st.stop()
@@ -71,11 +78,9 @@ if uploaded_file and user_question:
 
     with st.spinner("Waiting for assistant's response..."):
         try:
-            # ✅ Attach the file here in the run
             run = openai.beta.threads.runs.create(
                 thread_id=thread.id,
-                assistant_id=assistant.id,
-                file_ids=[file_id]
+                assistant_id=assistant.id
             )
 
             while True:
