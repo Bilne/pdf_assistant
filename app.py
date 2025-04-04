@@ -4,7 +4,11 @@ import time
 import os
 
 # Set your OpenAI API key here or use an environment variable
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = st.secrets("OPENAI_API_KEY")
+
+if "OPENAI_API_KEY" not in st.secrets:
+    st.error("OPENAI_API_KEY not found in secrets!")
+    st.stop()
 
 st.title("Engineering PDF Assistant")
 
