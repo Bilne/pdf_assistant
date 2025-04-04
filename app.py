@@ -29,6 +29,8 @@ if uploaded_file and user_question:
             file_response = openai.files.create(file=f, purpose="assistants")
         file_id = file_response.id
 
+    st.write("File ID:", file_id, type(file_id))
+
     with st.spinner("Creating assistant..."):
         assistant = openai.beta.assistants.create(
             name="PDF Assistant",
