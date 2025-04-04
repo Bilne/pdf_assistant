@@ -4,14 +4,14 @@ import time
 import tempfile
 import mimetypes
 
-# Load API key
+# Load your OpenAI API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.title("Engineering PDF Assistant")
 st.caption("Ask a question about your uploaded engineering PDF document.")
 st.write("OpenAI SDK version:", openai.__version__)
 
-# Upload and question input
+# Upload a PDF and enter a question
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
 user_question = st.text_input("Ask a question about the PDF")
 
@@ -40,13 +40,13 @@ if uploaded_file and user_question:
                 name="PDF Assistant",
                 instructions=(
                     "You are an engineering assistant. Use the uploaded PDF to answer questions. "
-                    "Provide clear answers and cite sections where applicable."
+                    "Provide clear, accurate responses and cite sections if relevant."
                 ),
                 model="gpt-4-turbo",
-                tools=[{"type": "retrieval"}]
+                tools=[{"type": "file_search"}]  # ✅ Use file_search instead of retrieval
             )
 
-            # ✅ Attach file to assistant separately
+            # ✅ Attach file to assistant after creation
             openai.beta.assistants.files.create(
                 assistant_id=assistant.id,
                 file_id=file_id
@@ -55,14 +55,14 @@ if uploaded_file and user_question:
             st.error(f"Assistant creation failed: {e}")
             st.stop()
 
-    with st.spinner("Starting a conversation thread..."):
+    with st.spinner("Starting conversation thread..."):
         try:
             thread = openai.beta.threads.create()
         except Exception as e:
             st.error(f"Thread creation failed: {e}")
             st.stop()
 
-    with st.spinner("Sending your question to the assistant..."):
+    with st.spinner("Sending your question..."):
         try:
             openai.beta.threads.messages.create(
                 thread_id=thread.id,
@@ -92,10 +92,10 @@ if uploaded_file and user_question:
                     st.stop()
                 time.sleep(1)
         except Exception as e:
-            st.error(f"Error during assistant run: {e}")
+            st.error(f"Run failed: {e}")
             st.stop()
 
-    with st.spinner("Fetching response..."):
+    with st.spinner("Fetching the assistant's response..."):
         try:
             messages = openai.beta.threads.messages.list(thread_id=thread.id)
             for msg in reversed(messages.data):
@@ -104,4 +104,5 @@ if uploaded_file and user_question:
                     st.markdown(msg.content[0].text.value)
         except Exception as e:
             st.error(f"Failed to retrieve messages: {e}")
+
 
