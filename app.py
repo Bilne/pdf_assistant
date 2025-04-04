@@ -25,17 +25,14 @@ if uploaded_file and user_question:
             file_response = openai.files.create(file=f, purpose='assistants')
         file_id = file_response.id
 
-    with st.spinner("Creating assistant..."):
-        
-    
-    
-    assistant = openai.beta.assistants.create(
-        name="PDF Assistant",
-        instructions="You are an engineering assistant. Use the uploaded document to answer questions and cite specific sections where appropriate.",
-        model="gpt-4-turbo",
-        tools=[Tool(type="retrieval")],
-        file_ids=[file_id]
-    )
+    with st.spinner("Creating assistant..."):   
+        assistant = openai.beta.assistants.create(
+            name="PDF Assistant",
+            instructions="You are an engineering assistant. Use the uploaded document to answer questions and cite specific sections where appropriate.",
+            model="gpt-4-turbo",
+            tools=[Tool(type="retrieval")],
+            file_ids=[file_id]
+        )
 
 
 
