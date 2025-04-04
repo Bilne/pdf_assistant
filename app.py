@@ -5,6 +5,8 @@ import tempfile
 
 st.write("OpenAI package version:", openai.__version__)
 
+from openai.types.beta.assistant_create_params import Tool
+
 # Set your API key from secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
@@ -25,7 +27,7 @@ if uploaded_file and user_question:
 
     with st.spinner("Creating assistant..."):
         
-    from openai.types.beta.assistant_create_params import Tool
+    
     
     assistant = openai.beta.assistants.create(
         name="PDF Assistant",
