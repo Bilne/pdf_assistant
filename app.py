@@ -1,10 +1,10 @@
 import streamlit as st
 import openai
 import time
-import os
+import tempfile
 
-# Set your OpenAI API key here or use an environment variable
-os.environ['OPENAI_API_KEY'] = st.secrets['OPENAI_API_KEY']
+# Set your API key from secrets
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.title("Engineering PDF Assistant")
 
@@ -13,10 +13,12 @@ user_question = st.text_input("Ask a question about the PDF")
 
 if uploaded_file and user_question:
     with st.spinner("Uploading file..."):
-        file_response = openai.files.create(
-            file=uploaded_file, 
-            purpose='assistants'
-        )
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+            tmp_file.write(uploaded_file.getvalue())
+            tmp_file_path = tmp_file.name
+
+        with open(tmp_file_path, "rb") as f:
+            file_response = openai.files.create(file=f, purpose='assistants')
         file_id = file_response.id
 
     with st.spinner("Creating assistant..."):
@@ -43,7 +45,6 @@ if uploaded_file and user_question:
             thread_id=thread.id,
             assistant_id=assistant.id
         )
-
         while True:
             run_status = openai.beta.threads.runs.retrieve(thread_id=thread.id, run_id=run.id)
             if run_status.status == "completed":
@@ -56,3 +57,4 @@ if uploaded_file and user_question:
     messages = openai.beta.threads.messages.list(thread_id=thread.id)
     for msg in messages.data:
         st.markdown(msg.content[0].text.value)
+
