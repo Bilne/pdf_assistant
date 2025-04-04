@@ -4,24 +4,26 @@ import time
 import tempfile
 import mimetypes
 
-# Load your OpenAI API key from Streamlit secrets
+# Load OpenAI API key from Streamlit secrets
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 st.title("Engineering PDF Assistant")
 st.caption("Ask a question about your uploaded engineering PDF document.")
 st.write("OpenAI SDK version:", openai.__version__)
 
-# Upload a PDF and enter a question
+# File uploader and user question
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
 user_question = st.text_input("Ask a question about the PDF")
 
 if uploaded_file and user_question:
     with st.spinner("Saving and uploading file to OpenAI..."):
+        # Save uploaded file temporarily
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
             tmp_file.write(uploaded_file.getvalue())
             tmp_path = tmp_file.name
 
         try:
+            # Detect content type for upload
             content_type = mimetypes.guess_type(uploaded_file.name)[0] or "application/pdf"
             with open(tmp_path, "rb") as f:
                 file_response = openai.files.create(
@@ -29,7 +31,7 @@ if uploaded_file and user_question:
                     purpose="assistants"
                 )
             file_id = file_response.id
-            st.success(f"File uploaded. File ID: {file_id}")
+            st.success(f"File uploaded successfully. File ID: {file_id}")
         except Exception as e:
             st.error(f"File upload failed: {e}")
             st.stop()
@@ -40,22 +42,16 @@ if uploaded_file and user_question:
                 name="PDF Assistant",
                 instructions=(
                     "You are an engineering assistant. Use the uploaded PDF to answer questions. "
-                    "Provide clear, accurate responses and cite sections if relevant."
+                    "Provide clear and helpful responses. If applicable, cite relevant sections."
                 ),
                 model="gpt-4-turbo",
-                tools=[{"type": "file_search"}]  # ✅ Use file_search instead of retrieval
-            )
-
-            # ✅ Attach file to assistant after creation
-            openai.beta.assistants.files.create(
-                assistant_id=assistant.id,
-                file_id=file_id
+                tools=[{"type": "file_search"}]  # ✅ Updated tool type
             )
         except Exception as e:
             st.error(f"Assistant creation failed: {e}")
             st.stop()
 
-    with st.spinner("Starting conversation thread..."):
+    with st.spinner("Creating conversation thread..."):
         try:
             thread = openai.beta.threads.create()
         except Exception as e:
@@ -75,9 +71,11 @@ if uploaded_file and user_question:
 
     with st.spinner("Waiting for assistant's response..."):
         try:
+            # ✅ Attach the file here in the run
             run = openai.beta.threads.runs.create(
                 thread_id=thread.id,
-                assistant_id=assistant.id
+                assistant_id=assistant.id,
+                file_ids=[file_id]
             )
 
             while True:
@@ -95,7 +93,7 @@ if uploaded_file and user_question:
             st.error(f"Run failed: {e}")
             st.stop()
 
-    with st.spinner("Fetching the assistant's response..."):
+    with st.spinner("Fetching assistant response..."):
         try:
             messages = openai.beta.threads.messages.list(thread_id=thread.id)
             for msg in reversed(messages.data):
