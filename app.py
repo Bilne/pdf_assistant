@@ -4,6 +4,18 @@ from openai import OpenAI
 # Get API key from Streamlit secrets
 client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
 
+st.write("🔑 Loaded API key?", "openai_api_key" in st.secrets)
+
+if "openai_api_key" not in st.secrets:
+    st.error("🚨 API key not found in Streamlit secrets!")
+else:
+    st.success("✅ API key loaded from secrets")
+
+
+from openai import OpenAI
+client = OpenAI(api_key=...)
+
+
 st.title("💬 Chat with GPT-4 (Streaming)")
 st.subheader("OpenAI API via Streamlit")
 
