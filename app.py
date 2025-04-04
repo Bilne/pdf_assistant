@@ -6,10 +6,6 @@ import os
 # Set your OpenAI API key here or use an environment variable
 openai.api_key = st.secrets("OPENAI_API_KEY")
 
-if "OPENAI_API_KEY" not in st.secrets:
-    st.error("OPENAI_API_KEY not found in secrets!")
-    st.stop()
-
 st.title("Engineering PDF Assistant")
 
 uploaded_file = st.file_uploader("Upload a PDF", type=["pdf"])
