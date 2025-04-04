@@ -24,13 +24,19 @@ if uploaded_file and user_question:
         file_id = file_response.id
 
     with st.spinner("Creating assistant..."):
+        
+    try:
         assistant = openai.beta.assistants.create(
             name="PDF Assistant",
-            instructions="You are an engineering assistant. Use the uploaded document to answer questions and cite specific sections where appropriate.",
+            instructions="You are an engineering assistant...",
             model="gpt-4-turbo",
-            tools=[{"type": "retrieval"}],
+            tools=[Tool(type="retrieval")],
             file_ids=[file_id]
         )
+    except Exception as e:
+        st.error(f"Assistant creation failed: {e}")
+        st.stop()
+
 
     with st.spinner("Creating thread..."):
         thread = openai.beta.threads.create()
