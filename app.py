@@ -2,7 +2,7 @@ import streamlit as st
 import openai
 
 # Load OpenAI API key from Streamlit secrets
-openai.api_key = st.secrets["openai"]["api_key"]
+openai.api_key = st.secrets["openai"]["OPENAI_API_KEY"]
 
 st.title("Chat with OpenAI")
 
