@@ -1,36 +1,30 @@
 import streamlit as st
 from openai import OpenAI
 
-# Check for API key in secrets
+# ✅ Consistent key name (use lowercase in .toml and code)
 if "openai_api_key" not in st.secrets:
     st.error("🚨 API key not found in Streamlit secrets!")
-    st.stop()
+else:
+    st.success("✅ API key loaded from secrets")
 
-# Initialize OpenAI client
+# Create OpenAI client
 client = OpenAI(api_key=st.secrets["openai_api_key"])
 
-# App layout
-st.title("💬 Chat with GPT (Streaming)")
-st.subheader("Ask a question and watch the response stream in real-time")
+st.title("💬 Chat with GPT-4 (Streaming)")
+st.subheader("OpenAI API via Streamlit")
 
-# Model selector
-model = st.selectbox("Choose a model:", ["gpt-4", "gpt-3.5-turbo"])
-
-# User input
 user_input = st.text_input("You:", placeholder="Ask me anything...")
 
-# Streamed response
 if user_input:
     response_placeholder = st.empty()
     full_response = ""
 
     with client.chat.completions.create(
-        model=model,
+        model="gpt-4",
         messages=[{"role": "user", "content": user_input}],
         stream=True
     ) as stream:
         for chunk in stream:
-            delta = chunk.choices[0].delta
-            if delta.content:
-                full_response += delta.content
+            if chunk.choices[0].delta.content:
+                full_response += chunk.choices[0].delta.content
                 response_placeholder.markdown(full_response)
