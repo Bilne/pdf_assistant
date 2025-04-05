@@ -2,12 +2,12 @@ import streamlit as st
 from openai import OpenAI
 
 # Check for API key in secrets
-if "OPENAI_API_KEY" not in st.secrets:
+if "openai_api_key" not in st.secrets:
     st.error("🚨 API key not found in Streamlit secrets!")
     st.stop()
 
 # Initialize OpenAI client
-client = OpenAI(api_key=st.secrets["OPENAI_API_KEY"])
+client = OpenAI(api_key=st.secrets["openai_api_key"])
 
 # App layout
 st.title("💬 Chat with GPT (Streaming)")
